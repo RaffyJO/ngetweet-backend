@@ -16,6 +16,7 @@ func Migration() {
 		&models.User{},
 		&models.Tweet{},
 		&models.Comment{},
+		&models.Like{},
 	)
 
 	if err != nil {

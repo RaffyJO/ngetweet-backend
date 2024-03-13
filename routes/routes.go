@@ -2,16 +2,24 @@ package routes
 
 import (
 	"ngetweet/controllers"
+	"ngetweet/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func RouteInit(r *gin.Engine) {
+	// Router Auth
+	r.POST("/users", controllers.Register)
+	r.POST("/login", controllers.Login)
+
 	// Router users
 	r.GET("/users", controllers.UserIndex)
-	r.POST("/users", controllers.UserCreate)
 
 	// Router tweets
-	r.GET("/tweets", controllers.TweetIndex)
-	r.POST("/tweets", controllers.TweetCreate)
+	r.GET("/tweets", middleware.RequiredAuth, controllers.TweetIndex)
+	r.POST("/tweets", middleware.RequiredAuth, controllers.TweetCreate)
+	r.PUT("/tweets/:id/like", middleware.RequiredAuth, controllers.AddLike)
+
+	// Router Likes
+	r.GET("/likes", middleware.RequiredAuth, controllers.LikeIndex)
 }
