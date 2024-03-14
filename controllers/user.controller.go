@@ -72,6 +72,33 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully added data."})
 }
 
+func Following(c *gin.Context){
+	var following models.Followings
+	var followers models.Followers
+	if err := c.ShouldBindJSON(&following); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	followers.UserID=following.FollowingId
+	followers.FollowersgId=following.UserID
+
+	if check:=db.DB.First(&following);check.RowsAffected!=0{
+		db.DB.Delete(&following)
+		db.DB.Delete(&followers)
+		 c.JSON(http.StatusOK, gin.H{"message": "Successfully Unfollow data."})
+		return
+	}
+
+	db.DB.Create(&followers)
+	result := db.DB.Create(&following)
+	if result.Error != nil {
+		c.AbortWithStatusJSON(http.StatusExpectationFailed, gin.H{"message": result.Error.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully Following data."})
+
+}
+
 func Login(c *gin.Context) {
 	var body struct {
 		Email    string

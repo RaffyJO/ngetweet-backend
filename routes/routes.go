@@ -22,4 +22,11 @@ func RouteInit(r *gin.Engine) {
 
 	// Router Likes
 	r.GET("/likes", middleware.RequiredAuth, controllers.LikeIndex)
+
+	// Routes Following
+	r.POST("/follow",controllers.Following)
+	r.GET("/follow",controllers.FollowIndex)
+
+	// Routes Followers
+	r.GET("/followers",controllers.FollowersIndex)
 }

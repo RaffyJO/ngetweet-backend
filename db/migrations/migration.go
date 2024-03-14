@@ -17,7 +17,10 @@ func Migration() {
 		&models.Tweet{},
 		&models.Comment{},
 		&models.Like{},
+		&models.Followings{},
+		&models.Followers{},
 	)
+
 
 	if err != nil {
 		fmt.Println("Can't running migrations")

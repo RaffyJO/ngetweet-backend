@@ -4,7 +4,8 @@ import "time"
 
 type Tweet struct {
 	ID            uint      `json:"id" gorm:"primaryKey"`
-	UserID        uint      `json:"user_id"`
+	UserID        uint      `json:"user_id" gorm:"foreignKey:ID" `
+	User 			User
 	Body          string    `json:"body" gorm:"type:text"`
 	Image         string    `json:"image"`
 	Likes         int       `json:"likes" gorm:"default:0"`
