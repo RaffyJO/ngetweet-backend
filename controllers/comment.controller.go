@@ -23,7 +23,7 @@ func CommentIndex(c *gin.Context) {
 	}
 
 	var comments []models.Comment
-	db.DB.Where("user_id = ?", authenticatedUser.ID).Find(&comments)
+	db.DB.Where("user_id = ?", authenticatedUser.ID).Preload("ChildComment").Find(&comments)
 	c.JSON(http.StatusOK, gin.H{"data": comments})
 }
 

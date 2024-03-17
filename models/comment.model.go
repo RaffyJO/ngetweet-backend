@@ -10,4 +10,5 @@ type Comment struct {
 	ParentCommentID uint      `json:"parent_comment_id" gorm:"default:0"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
+	ChildComment    []Comment `json:"child_comments" gorm:"foreignKey:ParentCommentID"`
 }
