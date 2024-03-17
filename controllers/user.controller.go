@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 	"ngetweet/db"
 	"ngetweet/models"
@@ -14,19 +13,20 @@ import (
 )
 
 func UserIndex(c *gin.Context) {
-	var users []models.User
-
-	defer func() {
-		if r := recover(); r != nil {
-			log.Printf("Panic recovered: %v", r)
-			c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
-		}
-	}()
-
-	if err := db.DB.Preload("Tweets").Find(&users).Error; err != nil {
-		log.Println("Error querying users:", err)
-		panic(err)
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not authenticated"})
+		return
 	}
+
+	authenticatedUser, ok := user.(models.User)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to get authenticated user"})
+		return
+	}
+
+	var users []models.User
+	db.DB.Where("id = ?", authenticatedUser.ID).Preload("Tweets").Find(&users)
 	c.JSON(http.StatusOK, gin.H{"data": users})
 }
 
@@ -136,4 +136,8 @@ func Login(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+}
+
+func Logout(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
 }

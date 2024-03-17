@@ -12,3 +12,13 @@ type Like struct {
 	CreatedAt time.Time `json:"created_at" gorm:"type:datetime"`
 	UpdatedAt time.Time `json:"updated_at" gorm:"type:datetime"`
 }
+
+type LikeResponse struct {
+	ID      uint `json:"id" gorm:"primaryKey"`
+	UserID  uint `json:"user_id"`
+	TweetID uint `json:"-"`
+}
+
+func (LikeResponse) TableName() string {
+	return "likes"
+}

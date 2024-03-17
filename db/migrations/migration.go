@@ -19,6 +19,7 @@ func Migration() {
 		&models.Like{},
 		&models.Followings{},
 		&models.Followers{},
+		&models.Comment{},
 	)
 
 
