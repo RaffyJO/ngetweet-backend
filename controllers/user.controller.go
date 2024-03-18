@@ -105,7 +105,7 @@ func Login(c *gin.Context) {
 		Password string
 	}
 
-	if c.Bind(&body) != nil {
+	if c.BindQuery(&body) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to read body"})
 		return
 	}
