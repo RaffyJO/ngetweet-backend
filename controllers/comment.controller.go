@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
 func CommentIndex(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
@@ -26,6 +27,9 @@ func CommentIndex(c *gin.Context) {
 	db.DB.Where("user_id = ?", authenticatedUser.ID).Preload("ChildComment").Find(&comments)
 	c.JSON(http.StatusOK, gin.H{"data": comments})
 }
+
+
+
 
 func AddComment(c *gin.Context) {
 	var tweet models.Tweet
@@ -80,6 +84,11 @@ func AddComment(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Comment created successfully"})
 }
+
+
+
+
+
 
 func DeleteComment(c *gin.Context) {
 	// Get logged user

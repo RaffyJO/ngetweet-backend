@@ -7,6 +7,8 @@ type Tweet struct {
 	UserID        uint           `json:"user_id"`
 	Body          string         `json:"body" gorm:"type:text"`
 	Image         string         `json:"image"`
+	CategoryId	  uint			 `json:"category_id"`
+	Category	  Category		 `gorm:"foreignKey:CategoryId"`
 	Likes         int            `json:"likes" gorm:"default:0"`
 	TotalComments int            `json:"total_comments" gorm:"default:0"`
 	CreatedAt     time.Time      `json:"created_at" gorm:"type:datetime"`

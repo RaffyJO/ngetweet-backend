@@ -23,7 +23,7 @@ func TweetIndex(c *gin.Context) {
 	}
 
 	var tweets []models.Tweet
-	db.DB.Where("user_id = ?", authenticatedUser.ID).Preload("UserLikes").Preload("Comments").Find(&tweets)
+	db.DB.Where("user_id = ?", authenticatedUser.ID).Preload("UserLikes").Preload("Category").Preload("Comments").Find(&tweets)
 	c.JSON(http.StatusOK, gin.H{"data": tweets})
 }
 

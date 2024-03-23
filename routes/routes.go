@@ -26,8 +26,8 @@ func RouteInit(r *gin.Engine) {
   r.PUT("/tweets/:id/like", middleware.RequiredAuth, controllers.AddLike)
 
 	// Routes Following
-	r.POST("/follow",controllers.Following)
-	r.GET("/follow",controllers.FollowIndex)
+	r.POST("/follow",middleware.RequiredAuth,controllers.Following)
+	r.GET("/follow",middleware.RequiredAuth,controllers.FollowIndex)
 
 	// Routes Followers
 	r.GET("/followers",controllers.FollowersIndex)
@@ -36,4 +36,8 @@ func RouteInit(r *gin.Engine) {
 	r.GET("/comments", middleware.RequiredAuth, controllers.CommentIndex)
 	r.POST("/tweets/:id/comment", middleware.RequiredAuth, controllers.AddComment)
 	r.DELETE("/tweets/:id/comment", middleware.RequiredAuth, controllers.DeleteComment)
+
+	// Router Category
+	r.POST("/category/add",controllers.CreateCategory)
+	r.GET("/category",controllers.GetCategory)
 }

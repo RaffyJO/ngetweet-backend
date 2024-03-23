@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ngetweet/db"
 	"ngetweet/models"
+	
 )
 
 func Migration() {
@@ -20,6 +21,7 @@ func Migration() {
 		&models.Followings{},
 		&models.Followers{},
 		&models.Comment{},
+		&models.Category{},
 	)
 
 
@@ -28,4 +30,8 @@ func Migration() {
 	}
 
 	fmt.Println("Migrated")
+
+	
+
+
 }

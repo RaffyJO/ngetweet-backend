@@ -80,7 +80,7 @@ func Following(c *gin.Context){
 		return
 	}
 	followers.UserID=following.FollowingId
-	followers.FollowersgId=following.UserID
+	followers.FollowersId=following.UserID
 
 	if check:=db.DB.First(&following);check.RowsAffected!=0{
 		db.DB.Delete(&following)
@@ -105,21 +105,22 @@ func Login(c *gin.Context) {
 		Password string
 	}
 
-	if c.Bind(&body) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to read body"})
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+
 
 	var user models.User
 	db.DB.First(&user, "email = ?", body.Email)
 	if user.ID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid email or password"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid email or password"})  //bisa diganti mbe form validation
 		return
-	}
+	} 
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid email or password"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid email or password"})  //bisa diganti mbe form validation
 		return
 	}
 
