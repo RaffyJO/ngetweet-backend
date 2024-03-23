@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 	"ngetweet/db"
 	"ngetweet/models"
@@ -14,19 +13,20 @@ import (
 )
 
 func UserIndex(c *gin.Context) {
-	var users []models.User
-
-	defer func() {
-		if r := recover(); r != nil {
-			log.Printf("Panic recovered: %v", r)
-			c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
-		}
-	}()
-
-	if err := db.DB.Preload("Tweets").Find(&users).Error; err != nil {
-		log.Println("Error querying users:", err)
-		panic(err)
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not authenticated"})
+		return
 	}
+
+	authenticatedUser, ok := user.(models.User)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to get authenticated user"})
+		return
+	}
+
+	var users []models.User
+	db.DB.Where("id = ?", authenticatedUser.ID).Preload("Tweets").Find(&users)
 	c.JSON(http.StatusOK, gin.H{"data": users})
 }
 
@@ -80,7 +80,7 @@ func Following(c *gin.Context){
 		return
 	}
 	followers.UserID=following.FollowingId
-	followers.FollowersgId=following.UserID
+	followers.FollowersId=following.UserID
 
 	if check:=db.DB.First(&following);check.RowsAffected!=0{
 		db.DB.Delete(&following)
@@ -105,21 +105,22 @@ func Login(c *gin.Context) {
 		Password string
 	}
 
-	if c.BindQuery(&body) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to read body"})
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+
 
 	var user models.User
 	db.DB.First(&user, "email = ?", body.Email)
 	if user.ID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid email or password"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid email or password"})  //bisa diganti mbe form validation
 		return
-	}
+	} 
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid email or password"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid email or password"})  //bisa diganti mbe form validation
 		return
 	}
 
@@ -136,4 +137,8 @@ func Login(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+}
+
+func Logout(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
 }

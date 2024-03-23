@@ -23,7 +23,7 @@ func TweetIndex(c *gin.Context) {
 	}
 
 	var tweets []models.Tweet
-	db.DB.Where("user_id = ?", authenticatedUser.ID).Find(&tweets)
+	db.DB.Where("user_id = ?", authenticatedUser.ID).Preload("UserLikes").Preload("Category").Preload("Comments").Find(&tweets)
 	c.JSON(http.StatusOK, gin.H{"data": tweets})
 }
 
@@ -63,15 +63,8 @@ func TweetCreate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully added tweet"})
 }
 
-func AddLike(c *gin.Context) {
-	var tweet models.Tweet
-
-	tweetID := c.Param("id")
-	if err := db.DB.First(&tweet, tweetID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Tweet not found"})
-		return
-	}
-
+func DeleteTweet(c *gin.Context) {
+	// Get logged user
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not authenticated"})
@@ -84,30 +77,25 @@ func AddLike(c *gin.Context) {
 		return
 	}
 
-	var like models.Like
-	if err := db.DB.Where("tweet_id = ? AND user_id = ?", tweet.ID, authenticatedUser.ID).First(&like).Error; err == nil {
-		if err := db.DB.Delete(&like).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove like"})
-			return
-		}
+	// Get tweet ID
+	tweetID := c.Param("id")
 
-		tweet.Likes--
-	} else {
-		like = models.Like{
-			TweetID: tweet.ID,
-			UserID:  authenticatedUser.ID,
-		}
-		if err := db.DB.Create(&like).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add like"})
-			return
-		}
-
-		tweet.Likes++
-	}
-
-	if err := db.DB.Save(&tweet).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update tweet"})
+	var tweet models.Tweet
+	if err := db.DB.First(&tweet, tweetID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Tweet not found"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Like status updated successfully"})
+
+	// Check user permission tweet
+	if tweet.UserID != authenticatedUser.ID {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "You are not authorized to delete this tweet"})
+		return
+	}
+
+	// Delete tweet
+	if err := db.DB.Delete(&tweet).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to delete tweet"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Tweet deleted successfully"})
 }

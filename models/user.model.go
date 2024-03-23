@@ -13,4 +13,6 @@ type User struct {
 	CreatedAt       time.Time       `json:"created_at" gorm:"type:datetime"`
 	UpdatedAt       time.Time       `json:"updated_at" gorm:"type:datetime"`
 	Tweets          []TweetResponse `json:"tweets" gorm:"foreignKey:UserID"`
+	Likes           []Like          `json:"likes" gorm:"foreignKey:UserID"`
+	Comments        []Comment       `json:"comments" gorm:"foreignKey:UserID"`
 }
