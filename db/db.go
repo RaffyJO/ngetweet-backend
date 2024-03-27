@@ -10,7 +10,7 @@ var DB *gorm.DB
 func DatabaseInit() {
 	var err error
 
-	dsn := "root:@tcp(localhost)/ngetweet?parseTime=true"
+	dsn := "root:@tcp(localhost:3307)/ngetweet?parseTime=true"
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)

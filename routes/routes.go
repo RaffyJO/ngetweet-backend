@@ -9,9 +9,9 @@ import (
 
 func RouteInit(r *gin.Engine) {
 	// Router Auth
-	r.POST("/users", controllers.Register)
+	r.POST("/register", controllers.Register)
 	r.POST("/login", controllers.Login)
-	r.POST("/logout", controllers.Logout)
+	r.POST("/logout", middleware.RequiredAuth, controllers.Logout)
 
 	// Router Users
 	r.GET("/users", middleware.RequiredAuth, controllers.UserIndex)
@@ -23,14 +23,14 @@ func RouteInit(r *gin.Engine) {
 
 	// Router Likes
 	r.GET("/likes", middleware.RequiredAuth, controllers.LikeIndex)
-  r.PUT("/tweets/:id/like", middleware.RequiredAuth, controllers.AddLike)
+	r.PUT("/tweets/:id/like", middleware.RequiredAuth, controllers.AddLike)
 
 	// Routes Following
-	r.POST("/follow",controllers.Following)
-	r.GET("/follow",controllers.FollowIndex)
+	r.POST("/follow", controllers.Following)
+	r.GET("/follow", controllers.FollowIndex)
 
 	// Routes Followers
-	r.GET("/followers",controllers.FollowersIndex)
+	r.GET("/followers", controllers.FollowersIndex)
 
 	// Router Comments
 	r.GET("/comments", middleware.RequiredAuth, controllers.CommentIndex)

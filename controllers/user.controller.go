@@ -33,7 +33,7 @@ func UserIndex(c *gin.Context) {
 func Register(c *gin.Context) {
 	var user models.User
 
-	if err := c.ShouldBindJSON(&user); err != nil {
+	if err := c.BindJSON(&user); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
@@ -69,43 +69,31 @@ func Register(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusExpectationFailed, gin.H{"message": result.Error.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully added data."})
-}
 
-func Following(c *gin.Context){
-	var following models.Followings
-	var followers models.Followers
-	if err := c.ShouldBindJSON(&following); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		return
-	}
-	followers.UserID=following.FollowingId
-	followers.FollowersgId=following.UserID
+	// Create a new token object, specifying signing method and the claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": user.ID,
+		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
+	})
 
-	if check:=db.DB.First(&following);check.RowsAffected!=0{
-		db.DB.Delete(&following)
-		db.DB.Delete(&followers)
-		 c.JSON(http.StatusOK, gin.H{"message": "Successfully Unfollow data."})
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to create token"})
 		return
 	}
 
-	db.DB.Create(&followers)
-	result := db.DB.Create(&following)
-	if result.Error != nil {
-		c.AbortWithStatusJSON(http.StatusExpectationFailed, gin.H{"message": result.Error.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully Following data."})
-
+	// Mengembalikan data pengguna dan token dalam respons
+	c.JSON(http.StatusOK, gin.H{"data": user, "token": tokenString})
 }
 
 func Login(c *gin.Context) {
 	var body struct {
-		Email    string
-		Password string
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 
-	if c.Bind(&body) != nil {
+	if c.BindJSON(&body) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to read body"})
 		return
 	}
@@ -135,9 +123,37 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to create token"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+
+	// Mengembalikan data pengguna dan token dalam respons
+	c.JSON(http.StatusOK, gin.H{"data": user, "token": tokenString})
 }
 
 func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
+}
+
+func Following(c *gin.Context) {
+	var following models.Followings
+	var followers models.Followers
+	if err := c.ShouldBindJSON(&following); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	followers.UserID = following.FollowingId
+	followers.FollowersgId = following.UserID
+
+	if check := db.DB.First(&following); check.RowsAffected != 0 {
+		db.DB.Delete(&following)
+		db.DB.Delete(&followers)
+		c.JSON(http.StatusOK, gin.H{"message": "Successfully Unfollow data."})
+		return
+	}
+
+	db.DB.Create(&followers)
+	result := db.DB.Create(&following)
+	if result.Error != nil {
+		c.AbortWithStatusJSON(http.StatusExpectationFailed, gin.H{"message": result.Error.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully Following data."})
 }
